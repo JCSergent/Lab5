@@ -85,15 +85,21 @@ public class BlackJackController implements Initializable {
 		System.out.println("Hit clicked");
 		int iPosition = 0;
 		int iDrawCard = 0;
+		int iPositionOpp = 0;
+		int iDrawCardOpp = 0;
 		Button btnHit = (Button) event.getSource();
 		switch (btnHit.getId()) {
 		case "btnHitP1":
 			iPosition = 1;
 			iDrawCard = iDrawCardP1;
+			iPositionOpp = 2;
+			iDrawCardOpp = iDrawCardP2;
 			break;
 		case "btnHitP2":
 			iPosition = 2;
 			iDrawCard = iDrawCardP2;
+			iPositionOpp = 1;
+			iDrawCardOpp = iDrawCardP1;
 			break;
 		}
 
@@ -105,8 +111,10 @@ public class BlackJackController implements Initializable {
 		// the code below will figure out where Point A and Point B are on the scene
 
 		Point2D pntCardDealt = null;
+		Point2D pntCardDealtOpp = null;
 
 		pntCardDealt = FindPoint(getCardHBox(iPosition), iDrawCard);
+		pntCardDealtOpp = FindPoint(getCardHBox(iPositionOpp), iDrawCardOpp);
 
 		Point2D pntDeck = FindPoint(hBoxDeck, 0);
 
@@ -125,7 +133,8 @@ public class BlackJackController implements Initializable {
 
 		// Create the Translation transition (we're using a Path, but this is how you do
 		// a translate):
-		TranslateTransition transT = CreateTranslateTransition(pntDeck, pntCardDealt, img);
+		TranslateTransition transT1 = CreateTranslateTransition(pntDeck, pntCardDealtOpp, img);
+		TranslateTransition transT2 = CreateTranslateTransition(pntDeck, pntCardDealt, img);
 
 		// Create a Rotate transition
 		RotateTransition rotT = CreateRotateTransition(img);
@@ -134,14 +143,18 @@ public class BlackJackController implements Initializable {
 		ScaleTransition scaleT = CreateScaleTransition(img);
 
 		// Create a Path transition
-		PathTransition pathT = CreatePathTransition(pntDeck, pntCardDealt, img);
-
+		PathTransition pathT1 = CreatePathTransition(pntDeck, pntCardDealtOpp, img);
+		PathTransition pathT2 = CreatePathTransition(pntCardDealtOpp, pntCardDealt, img);
+		
 		// Create a new Parallel transition.
 		ParallelTransition patTMoveRot = new ParallelTransition();
 
 		// Add transitions you want to execute currently to the parallel transition
-		patTMoveRot.getChildren().addAll(rotT, pathT);
-		// patTMoveRot.getChildren().addAll(pathT, rotT);
+		//patTMoveRot.getChildren().addAll(rotT, pathT);
+		patTMoveRot.getChildren().addAll(pathT1, rotT, scaleT);
+		
+		ParallelTransition patTMoveRot2 = new ParallelTransition();
+		patTMoveRot2.getChildren().addAll(pathT2, rotT, scaleT);
 
 		// Create a new Parallel transition to fade in/fade out
 		ParallelTransition patTFadeInFadeOut = createFadeTransition(
@@ -151,7 +164,7 @@ public class BlackJackController implements Initializable {
 		SequentialTransition seqDeal = new SequentialTransition();
 
 		// Add the two parallel transitions to the sequential transition
-		seqDeal.getChildren().addAll(patTMoveRot, patTFadeInFadeOut);
+		seqDeal.getChildren().addAll(patTMoveRot, patTMoveRot2, patTFadeInFadeOut);
 
 		// Set up event handler to remove the animation image after the transition is
 		// complete
@@ -162,7 +175,7 @@ public class BlackJackController implements Initializable {
 			}
 		});
 
-		// Add the sequential transistion to the main sequential transision and play
+		// Add the sequential transition to the main sequential transition and play
 		seqDealTable.getChildren().add(seqDeal);
 
 		seqDealTable.setInterpolator(Interpolator.EASE_OUT);
